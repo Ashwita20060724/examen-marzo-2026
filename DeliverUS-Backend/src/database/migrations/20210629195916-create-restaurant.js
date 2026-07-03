@@ -86,6 +86,12 @@ module.exports = {
           },
           key: 'id'
         }
+      },
+      //AÑADIMOS ILLIMITADO O NO
+      isUnlimited: {
+        allowNull: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       }
     })
   },

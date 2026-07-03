@@ -26,16 +26,36 @@ const loadModel = (sequelize, DataTypes) => {
       }
     }
 
+    
+    //TENEMOS QUE OBTENER LOS PEDIDOS
+    //QUE SE REALIZARON EN LAS ÚLTIMAS 2 HORAS
+    //PARA ESO CONTAMOS LOS PEDIDOS QUE TENGAN
+    // EL ID QUE NECESITAMOS + CREADO >= 2 HORAS
     async getOrdersInLastTwoHours () {
       const restaurantId = this.id
       const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
       const { Order } = this.sequelize.models
-      throw new Error('Not implemented')
+      return await Order.count({
+        where: {
+          restaurantId: restaurantId,
+          createdAt: { [Op.gte]:
+            twoHoursAgo
+          }
+        }
+      })
     }
 
     async getIsClosedByLimit () {
-      throw new Error('Not implemented')
-    }
+      //1. Miramos si es ilimitado:
+      if(this.isUnlimited){
+        return false;
+      }
+      //2. reutilizamos los métodos del ejercicio 2
+      const ordersInLastTwoHours = await this.getOrdersInLastTwoHours();
+      //3. El restaurante se satura si ha recibido 1
+      // o más pedidos en las últimas 2 horas
+      return ordersInLastTwoHours > 0;
+        }
   }
   Restaurant.init({
     name: {
@@ -93,6 +113,12 @@ const loadModel = (sequelize, DataTypes) => {
     },
     isClosedByLimit: {
       type: DataTypes.VIRTUAL
+    },
+    //HAY QUE AÑADIR isUnlimited
+    isUnlimited: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     sequelize,

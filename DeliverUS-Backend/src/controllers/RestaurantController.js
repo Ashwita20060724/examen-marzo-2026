@@ -95,12 +95,43 @@ const destroy = async function (req, res) {
   }
 }
 
+//TENEMOS QUE AÑADOR LA FUNCIÓN PARA QUE NO SE
+// PASEN DE 3 RESTAURANTES ILIMITADOS
+const checkUnlimitedLimit = async function (req, res){
+  try{
+    const restaurante = await Restaurant.findByPk(req.params.restaurantId)
+    if(!restaurante){
+      return res.status(404).send('Restaurant not found')
+    }
+
+    if(!restaurante.isUnlimited) {
+      const ilimitadoCount = Restaurant.count({
+        where:{
+          userId: restaurante.userId,
+          isUnlimited: true
+        }
+      })
+
+      if(ilimitadoCount > 3){
+        return res.status(409).send('El propietario solo puede tener 3 restaurantes ilimitados')
+      }
+    }
+    restaurante.isUnlimited = !restaurante.isUnlimited
+    await restaurante.save()
+    return res.json(restaurante)
+} catch(error) {
+  res.status(500).send(error)
+}
+  
+}
+
 const RestaurantController = {
   index,
   indexOwner,
   create,
   show,
   update,
-  destroy
+  destroy,
+  checkUnlimitedLimit
 }
 export default RestaurantController
