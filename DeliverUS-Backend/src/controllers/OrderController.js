@@ -99,7 +99,17 @@ const indexCustomer = async function (req, res) {
 
 const create = async (req, res) => {
   // Use sequelizeSession to start a transaction
-  res.status(500).send('This function is to be implemented')
+  try{
+    const restaurante = await Restaurant.findByPk(req.body.restaurantId)
+    const demandaAlta = await restaurante.getIsHighDemand()
+    if(demandaAlta){
+      req.body.price = req.body.price + 5.00
+    }
+    const newOrder = await Order.create(req.body)
+    res.json(newOrder)
+  } catch(error){
+    res.status(500).send(error)
+  }
 }
 
 // TODO: Implement the update function that receives a modified order and persists it in the database.
