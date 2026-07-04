@@ -55,7 +55,18 @@ const loadModel = (sequelize, DataTypes) => {
       //3. El restaurante se satura si ha recibido 1
       // o más pedidos en las últimas 2 horas
       return ordersInLastTwoHours > 0;
+      }
+
+    
+      //EJERCICIOS NUEVOS: 1. SABER SI ES DE ALTA DEMANDA
+      async getIsHighDemand() {
+        if(this.isUnlimited){
+          return false
         }
+        //CONTAMOS LOS PEDIDOS DE LAS ÚLTIMAS 2 HORAS
+        const ordersInLastTwoHours = await this.getOrdersInLastTwoHours();
+        return ordersInLastTwoHours > 3
+      }
   }
   Restaurant.init({
     name: {
