@@ -85,7 +85,7 @@ const destroy = async function (req, res) {
     const result = await Restaurant.destroy({ where: { id: req.params.restaurantId } })
     let message = ''
     if (result === 1) {
-      message = 'Sucessfuly deleted restaurant id.' + req.params.restaurantId
+      message = 'Successfully deleted restaurant id.' + req.params.restaurantId
     } else {
       message = 'Could not delete restaurant.'
     }
@@ -95,34 +95,15 @@ const destroy = async function (req, res) {
   }
 }
 
-//TENEMOS QUE AÑADOR LA FUNCIÓN PARA QUE NO SE
-// PASEN DE 3 RESTAURANTES ILIMITADOS
-const checkUnlimitedLimit = async function (req, res){
+const toggleIsUnlimited = async function (req, res) {
   try{
     const restaurante = await Restaurant.findByPk(req.params.restaurantId)
-    if(!restaurante){
-      return res.status(404).send('Restaurant not found')
-    }
-
-    if(!restaurante.isUnlimited) {
-      const ilimitadoCount = Restaurant.count({
-        where:{
-          userId: restaurante.userId,
-          isUnlimited: true
-        }
-      })
-
-      if(ilimitadoCount > 3){
-        return res.status(409).send('El propietario solo puede tener 3 restaurantes ilimitados')
-      }
-    }
     restaurante.isUnlimited = !restaurante.isUnlimited
     await restaurante.save()
-    return res.json(restaurante)
-} catch(error) {
-  res.status(500).send(error)
-}
-  
+    res.json(restaurante)
+  } catch(error){
+    res.status(500).send(error)
+  }
 }
 
 const RestaurantController = {
@@ -132,6 +113,6 @@ const RestaurantController = {
   show,
   update,
   destroy,
-  checkUnlimitedLimit
+  toggleIsUnlimited
 }
 export default RestaurantController

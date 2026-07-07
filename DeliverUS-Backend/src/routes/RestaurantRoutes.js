@@ -19,7 +19,8 @@ const loadFileRoutes = function (app) {
       handleFilesUpload(['logo', 'heroImage'], process.env.RESTAURANTS_FOLDER),
       RestaurantValidation.create,
       handleValidation,
-      RestaurantController.create)
+      RestaurantController.create,
+      RestaurantMiddleware.checkUnlimitedLimitCreate)
 
   app.route('/restaurants/:restaurantId')
     .get(
@@ -33,7 +34,8 @@ const loadFileRoutes = function (app) {
       handleFilesUpload(['logo', 'heroImage'], process.env.RESTAURANTS_FOLDER),
       RestaurantValidation.update,
       handleValidation,
-      RestaurantController.update)
+      RestaurantController.update,
+    RestaurantMiddleware.checkUnlimitedLimitUpdate)
     .delete(
       isLoggedIn,
       hasRole('owner'),
@@ -69,7 +71,8 @@ const loadFileRoutes = function (app) {
       hasRole('owner'),
       checkEntityExists(Restaurant, 'restaurantId'),
       RestaurantMiddleware.checkRestaurantOwnership,
-      RestaurantController.checkUnlimitedLimit
+      RestaurantMiddleware.checkUnlimitedLimitToggle,
+      RestaurantController.toggleIsUnlimited
     )
 }
 export default loadFileRoutes

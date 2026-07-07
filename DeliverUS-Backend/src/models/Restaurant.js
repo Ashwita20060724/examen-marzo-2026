@@ -1,5 +1,6 @@
 import { Model, Op } from 'sequelize'
 import moment from 'moment'
+import {Order} from '../models'
 
 const loadModel = (sequelize, DataTypes) => {
   class Restaurant extends Model {
@@ -32,29 +33,36 @@ const loadModel = (sequelize, DataTypes) => {
     //PARA ESO CONTAMOS LOS PEDIDOS QUE TENGAN
     // EL ID QUE NECESITAMOS + CREADO >= 2 HORAS
     async getOrdersInLastTwoHours () {
-      const restaurantId = this.id
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-      const { Order } = this.sequelize.models
-      return await Order.count({
-        where: {
-          restaurantId: restaurantId,
-          createdAt: { [Op.gte]:
-            twoHoursAgo
+      try{
+        const restaurantId = this.id
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+        const pedidosHace2Horas = await Order.count({
+          where: {
+            restaurantId,
+            createdAt: {[Op.gte]: twoHoursAgo}
           }
         }
-      })
+        )
+        return pedidosHace2Horas
+      } catch(err){
+        return err
+      }
     }
 
     async getIsClosedByLimit () {
-      //1. Miramos si es ilimitado:
-      if(this.isUnlimited){
-        return false;
-      }
-      //2. reutilizamos los métodos del ejercicio 2
-      const ordersInLastTwoHours = await this.getOrdersInLastTwoHours();
-      //3. El restaurante se satura si ha recibido 1
-      // o más pedidos en las últimas 2 horas
-      return ordersInLastTwoHours > 0;
+        try{
+          if(this.isUnlimited){
+            return false
+          }
+          const pedidos = this.getOrdersInLastTwoHours
+          if(pedidos > 0){
+            return true
+          } else{
+            false
+          }
+        } catch(error){
+          return error
+        }
       }
 
     
@@ -127,8 +135,8 @@ const loadModel = (sequelize, DataTypes) => {
     },
     //HAY QUE AÑADIR isUnlimited
     isUnlimited: {
-      type: DataTypes.BOOLEAN,
       allowNull: false,
+      type: DataTypes.BOOLEAN,
       defaultValue: false
     }
   }, {

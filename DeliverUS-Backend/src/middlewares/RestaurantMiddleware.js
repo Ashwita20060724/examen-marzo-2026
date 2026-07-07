@@ -25,4 +25,66 @@ const restaurantHasNoOrders = async (req, res, next) => {
   }
 }
 
-export { checkRestaurantOwnership, restaurantHasNoOrders }
+
+const checkUnlimitedLimitCreate = async (req, res, next) => {
+  try{
+    //si no es ilimitado:
+    if(!req.body.isUnlimited) return next()
+
+    const numberUnlimitedRestaurant = await Restaurant.count({
+      where: {
+        userId: req.user.id,
+        isUnlimited: true
+      }
+    })
+    if(numberUnlimitedRestaurant >= 3){
+      res.status(409).send('El propietario no puede tener más de 3 restaurantes ilimitados')
+    }
+    return next()
+  } catch(error){
+    res.status(500).send(error)
+  }
+}
+
+const checkUnlimitedLimitUpdate = async(req, res, next) => {
+  try{
+    //si no es ilimitado:
+    if(!req.body.isUnlimited) return next()
+    //añadimos esta opción para verificar si el restaurante ya tiene ilimitados o no
+    const restaurante = await Restaurant.findByPk(res.params.restaurantId)
+    if(restaurant.isUnlimited) return next()
+    const numberUnlimitedRestaurant = await Restaurant.count({
+      where: {
+        userId: req.user.id,
+        isUnlimited: true
+      }
+    })
+    if(numberUnlimitedRestaurant >= 3){
+      res.status(409).send('El propietario no puede tener más de 3 restaurantes ilimitados')
+    }
+    return next()
+  } catch(error) {
+    res.status(500).send(error)
+  }
+}
+
+const checkUnlimitedLimitToggle = async (req, res, next) => {
+  try{
+    const restaurante = await Restaurant.findByPk(res.params.restaurantId)
+    if(restaurant.isUnlimited) return next()
+    const numberUnlimitedRestaurant = await Restaurant.count({
+      where: {
+        userId: req.user.id,
+        isUnlimited: true
+      }
+    })
+    if(numberUnlimitedRestaurant >= 3){
+      res.status(409).send('El propietario no puede tener más de 3 restaurantes ilimitados')
+    }
+    return next()
+  } catch(error){
+    res.status(500).send(error)
+  }
+}
+
+export { checkRestaurantOwnership, restaurantHasNoOrders, checkUnlimitedLimitCreate, checkUnlimitedLimitUpdate, checkUnlimitedLimitToggle }
